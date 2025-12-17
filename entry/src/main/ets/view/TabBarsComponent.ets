@@ -214,7 +214,7 @@ export default struct TabBar {
             // 商品列表组件
             Scroll() {
               Column() {
-                GoodsList()
+                GoodsList({categoryId : (item.id % 4) + 1} )
               }
               .width('100%')
             }

@@ -42,7 +42,7 @@ export function initGoodsData(): GoodsListItemType[] {
   const categories = 4; // 总分类数
   for (let i = 1; i <= 5; i++) {
     const imageIndex = (i % 4) + 1;
-    const categoryId = (i % categories) + 1; // 分配商品到不同分类
+    const categoryId = i%categories + 1; // 分配商品到不同分类
     goodsList.push({
       id: i,
       category: categoryId, // 设置分类ID
@@ -74,7 +74,7 @@ function getImageByIndex(index: number): Resource {
     $r('app.media.goodsImg'),
     $r('app.media.goodsImg_2'),
     $r('app.media.goodsImg_3'),
-    $r('app.media.goodsImg_4')
+    $r('app.media.goodsImg_4'),
   ];
   return images[index % 4];
 }

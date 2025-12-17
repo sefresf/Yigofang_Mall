@@ -38,7 +38,7 @@ export function initGoodsData(): GoodsListItemType[] {
     const categories = 4; // 总分类数
     for (let i = 1; i <= 5; i++) {
         const imageIndex = (i % 4) + 1;
-        const categoryId = (i % categories) + 1; // 分配商品到不同分类
+        const categoryId = i % categories + 1; // 分配商品到不同分类
         goodsList.push({
             id: i,
             category: categoryId,
@@ -67,7 +67,7 @@ function getImageByIndex(index: number): Resource {
         { "id": 16777238, "type": 20000, params: [], "bundleName": "com.example.list_harmony", "moduleName": "entry" },
         { "id": 16777245, "type": 20000, params: [], "bundleName": "com.example.list_harmony", "moduleName": "entry" },
         { "id": 16777248, "type": 20000, params: [], "bundleName": "com.example.list_harmony", "moduleName": "entry" },
-        { "id": 16777246, "type": 20000, params: [], "bundleName": "com.example.list_harmony", "moduleName": "entry" }
+        { "id": 16777246, "type": 20000, params: [], "bundleName": "com.example.list_harmony", "moduleName": "entry" },
     ];
     return images[index % 4];
 }
