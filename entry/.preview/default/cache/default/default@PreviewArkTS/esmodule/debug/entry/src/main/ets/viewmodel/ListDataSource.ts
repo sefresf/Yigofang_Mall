@@ -1,4 +1,4 @@
-import { initGoodsData } from "@bundle:com.example.list_harmony/entry/ets/viewmodel/InitialData";
+import { initHomeGoodsData, initMobilePhoneGoodsData, initClothesGoodsData, initWearGoodsData, initHomeFurnishingGoodsData } from "@bundle:com.example.list_harmony/entry/ets/viewmodel/InitialData";
 import type { GoodsListItemType } from "@bundle:com.example.list_harmony/entry/ets/viewmodel/InitialData";
 import { MAX_DATA_LENGTH } from "@bundle:com.example.list_harmony/entry/ets/common/CommonConstants";
 /**
@@ -11,8 +11,27 @@ export class ListDataSource implements IDataSource {
     private currentIndex: number;
     constructor(categoryId: number = 1) {
         this.categoryId = categoryId;
-        // 根据分类过滤初始化数据
-        this.dataArray = initGoodsData().filter(item => item.category === this.categoryId);
+        // 根据分类调用对应的初始化函数
+        switch (this.categoryId) {
+            case 0:
+                this.dataArray = initHomeGoodsData();
+                break;
+            case 1:
+                this.dataArray = initMobilePhoneGoodsData();
+                break;
+            case 2:
+                this.dataArray = initClothesGoodsData();
+                break;
+            case 3:
+                this.dataArray = initWearGoodsData();
+                break;
+            case 4:
+                this.dataArray = initHomeFurnishingGoodsData();
+                break;
+            default:
+                this.dataArray = initMobilePhoneGoodsData();
+                break;
+        }
         this.currentIndex = this.dataArray.length;
     }
     totalCount(): number {
@@ -46,13 +65,13 @@ export class ListDataSource implements IDataSource {
             const categories = 4;
             // 每次加载5个新商品
             for (let i = 0; i < 5 && this.dataArray.length < MAX_DATA_LENGTH; i++) {
-                const id = startId + i;
-                const imageIndex = (id % 4);
+                const uniqueId = this.categoryId * 1000 + this.currentIndex + i + 1; // 生成唯一ID
+                const imageIndex = (uniqueId - 1) % 4;
                 const categoryId = this.categoryId;
                 newData.push({
-                    id: id,
-                    goodsName: id % 2 === 0 ? { "id": 16777226, "type": 10003, params: [], "bundleName": "com.example.list_harmony", "moduleName": "entry" } : { "id": 16777222, "type": 10003, params: [], "bundleName": "com.example.list_harmony", "moduleName": "entry" },
-                    price: getPriceByIndex(id),
+                    id: uniqueId,
+                    goodsName: (this.currentIndex + i) % 2 === 0 ? { "id": 16777226, "type": 10003, params: [], "bundleName": "com.example.list_harmony", "moduleName": "entry" } : { "id": 16777222, "type": 10003, params: [], "bundleName": "com.example.list_harmony", "moduleName": "entry" },
+                    price: getPriceByIndex(uniqueId),
                     goodsImg: getImageByIndex(imageIndex),
                     advertisingLanguage: { "id": 16777221, "type": 10003, params: [], "bundleName": "com.example.list_harmony", "moduleName": "entry" },
                     evaluate: { "id": 16777225, "type": 10003, params: [], "bundleName": "com.example.list_harmony", "moduleName": "entry" },
@@ -78,7 +97,27 @@ export class ListDataSource implements IDataSource {
         this.dataArray = newData;
         // 模拟网络延迟
         setTimeout(() => {
-            this.dataArray = initGoodsData();
+            // 根据分类调用对应的初始化函数
+            switch (this.categoryId) {
+                case 0:
+                    this.dataArray = initHomeGoodsData();
+                    break;
+                case 1:
+                    this.dataArray = initMobilePhoneGoodsData();
+                    break;
+                case 2:
+                    this.dataArray = initClothesGoodsData();
+                    break;
+                case 3:
+                    this.dataArray = initWearGoodsData();
+                    break;
+                case 4:
+                    this.dataArray = initHomeFurnishingGoodsData();
+                    break;
+                default:
+                    this.dataArray = initMobilePhoneGoodsData();
+                    break;
+            }
             this.currentIndex = this.dataArray.length;
             // 通知数据刷新
             this.listeners.forEach(listener => {
