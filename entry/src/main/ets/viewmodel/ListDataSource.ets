@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { GoodsListItemType, initGoodsData } from './InitialData';
+import { GoodsListItemType, getRefreshedGoodsByCategory, CATEGORIES } from './InitialData';
 import { MAX_DATA_LENGTH, MAGNIFICATION } from '../common/CommonConstants';
 
 /**
@@ -23,10 +23,12 @@ export class ListDataSource implements IDataSource {
   private listeners: DataChangeListener[] = [];
   private dataArray: GoodsListItemType[] = [];
   private currentIndex: number = 0;
+  private category: string = CATEGORIES.SELECTED;
 
-  constructor() {
+  constructor(category: string = CATEGORIES.SELECTED) {
+    this.category = category;
     // 初始化数据
-    this.dataArray = initGoodsData();
+    this.dataArray = getRefreshedGoodsByCategory(category);
     this.currentIndex = this.dataArray.length;
   }
 
@@ -39,7 +41,7 @@ export class ListDataSource implements IDataSource {
     if (index >= this.dataArray.length - 6 && this.dataArray.length < MAX_DATA_LENGTH) {
       this.pushData();
     }
-    
+
     // 如果索引有效，返回数据，否则返回最后一个数据
     return index < this.dataArray.length ? this.dataArray[index] : this.dataArray[this.dataArray.length - 1];
   }
@@ -63,7 +65,7 @@ export class ListDataSource implements IDataSource {
     setTimeout(() => {
       const newData: GoodsListItemType[] = [];
       const startId = this.currentIndex + 1;
-      
+
       // 每次加载10个新商品
       for (let i = 0; i < 10 && this.dataArray.length < MAX_DATA_LENGTH; i++) {
         const id = startId + i;
@@ -74,15 +76,16 @@ export class ListDataSource implements IDataSource {
           price: getPriceByIndex(id),
           goodsImg: getImageByIndex(imageIndex),
           advertisingLanguage: $r('app.string.advertising_language'),
-          evaluate: $r('app.string.evaluate')
+          evaluate: $r('app.string.evaluate'),
+          category: this.category
         });
       }
-      
+
       if (newData.length > 0) {
         const startIndex = this.dataArray.length;
         this.dataArray.push(...newData);
         this.currentIndex += newData.length;
-        
+
         // 通知数据变化
         this.listeners.forEach(listener => {
           listener.onDataAdd?.(startIndex);
@@ -98,14 +101,30 @@ export class ListDataSource implements IDataSource {
   refreshData(): void {
     // 模拟网络延迟
     setTimeout(() => {
-      this.dataArray = initGoodsData();
+      this.dataArray = getRefreshedGoodsByCategory(this.category);
       this.currentIndex = this.dataArray.length;
-      
+
       // 通知数据刷新
       this.listeners.forEach(listener => {
         listener.onDataReloaded?.();
       });
     }, 1000);
+  }
+
+  /**
+   * 设置分类
+   */
+  setCategory(category: string): void {
+    if (this.category !== category) {
+      this.category = category;
+      this.dataArray = getRefreshedGoodsByCategory(category);
+      this.currentIndex = this.dataArray.length;
+
+      // 通知数据刷新
+      this.listeners.forEach(listener => {
+        listener.onDataReloaded?.();
+      });
+    }
   }
 }
 

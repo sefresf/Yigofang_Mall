@@ -32,6 +32,30 @@ export default struct GoodsList {
   private endTouchOffsetY: number = 0;
   // 是否正在加载
   private isLoading: boolean = false;
+  // 是否正在刷新
+  @State isRefreshing: boolean = false;
+  // 分类
+  @Prop category: string = 'selected';
+
+  aboutToAppear() {
+    // 当分类改变时，更新数据源
+    this.goodsListData.setCategory(this.category);
+  }
+
+  // 处理下拉刷新
+  private handleRefresh() {
+    if (this.isRefreshing) {
+      return;
+    }
+
+    this.isRefreshing = true;
+
+    // 模拟网络延迟
+    setTimeout(() => {
+      this.goodsListData.refreshData();
+      this.isRefreshing = false;
+    }, commonConst.REFRESH_DELAY);
+  }
 
   build() {
     Row() {
@@ -83,7 +107,7 @@ export default struct GoodsList {
                     .width(commonConst.EVALUATE_WIDTH)
                     .maxLines(1)
                     .textOverflow({ overflow: TextOverflow.Ellipsis })
-                  
+
                   // 价格信息（红色突出显示）
                   Text(item?.price)
                     .fontSize(commonConst.NORMAL_FONT_SIZE)
@@ -101,10 +125,6 @@ export default struct GoodsList {
             .justifyContent(FlexAlign.SpaceBetween) // 商品图片和信息区域两端对齐
             .height(commonConst.GOODS_LIST_HEIGHT)
             .width(commonConst.LAYOUT_WIDTH_OR_HEIGHT)
-            // .backgroundColor($r('app.color.white'))
-            // .borderRadius(12)
-            // .margin({ left: 12, right: 12 })
-            // .shadow({ radius: 6, color: '#20000000', offsetX: 1, offsetY: 2 })
           }
           // 监听触摸事件，实现触底加载更多
           .onTouch((event?: TouchEvent) => {
@@ -125,6 +145,10 @@ export default struct GoodsList {
                     this.isLoading = false;
                   }, 500);
                 }
+                // 判断是否下拉刷新
+                if (this.endTouchOffsetY - this.startTouchOffsetY > 100 && !this.isRefreshing) {
+                  this.handleRefresh();
+                }
                 break;
             }
           })
@@ -133,19 +157,29 @@ export default struct GoodsList {
       .width('100%')
       .height('100%')
       .edgeEffect(EdgeEffect.Spring) // 使用弹簧效果
-      
+
+      // 刷新提示
+      if (this.isRefreshing) {
+        Text('正在刷新...')
+          .fontSize(commonConst.NORMAL_FONT_SIZE)
+          .fontColor($r('app.color.deepGray'))
+          .textAlign(TextAlign.Center)
+          .width('100%')
+          .margin({ top: 20, bottom: 20 })
+      }
+
       // 加载更多提示
       if (this.isLoading) {
         Text('正在加载更多...')
           .fontSize(commonConst.NORMAL_FONT_SIZE)
-          .fontColor($r('app.color.gray'))
+          .fontColor($r('app.color.deepGray'))
           .textAlign(TextAlign.Center)
           .width('100%')
           .margin({ top: 20, bottom: 40 })
       } else {
         Text($r('app.string.to_bottom'))
           .fontSize(commonConst.NORMAL_FONT_SIZE)
-          .fontColor($r('app.color.gray'))
+          .fontColor($r('app.color.deepGray'))
           .textAlign(TextAlign.Center)
           .width('100%')
           .margin({ top: 20, bottom: 40 })

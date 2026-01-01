@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { initTabBarData } from '../viewmodel/InitialData';
+import { initTabBarData, CATEGORIES } from '../viewmodel/InitialData';
 import {
   LAYOUT_WIDTH_OR_HEIGHT,
   NORMAL_FONT_SIZE,
@@ -45,6 +45,22 @@ export default struct TabBar {
   @State refreshText: Resource = $r('app.string.refresh_text');
   // 下拉偏移量
   @State pullDownOffset: number = 0;
+  // 标签页数据
+  @State tabData: Resource[] = [];
+
+  // 分类列表
+  private categoryList: string[] = [
+    CATEGORIES.SELECTED,
+    CATEGORIES.MOBILE_PHONE,
+    CATEGORIES.CLOTHES,
+    CATEGORIES.WEAR,
+    CATEGORIES.HOME_FURNISHING
+  ];
+
+  aboutToAppear() {
+    // 初始化标签数据
+    this.tabData = initTabBarData();
+  }
 
   /**
    * 构建第一个标签页（默认选中标签）
@@ -54,7 +70,7 @@ export default struct TabBar {
   firstTabBar() {
     Column() {
       Text($r('app.string.selected'))
-        // 根据是否选中调整字体大小
+      // 根据是否选中调整字体大小
         .fontSize(this.tabsIndex === 0 ? BIGGER_FONT_SIZE : NORMAL_FONT_SIZE)
         // 根据是否选中调整字体颜色
         .fontColor(this.tabsIndex === 0 ? Color.Black : $r('app.color.gray'))
@@ -76,7 +92,7 @@ export default struct TabBar {
   otherTabBar(content: Resource, index: number) {
     Column() {
       Text(content)
-        // 根据是否选中调整字体大小
+      // 根据是否选中调整字体大小
         .fontSize(this.tabsIndex === index + 1 ? BIGGER_FONT_SIZE : NORMAL_FONT_SIZE)
         // 根据是否选中调整字体颜色
         .fontColor(this.tabsIndex === index + 1 ? Color.Black : $r('app.color.gray'))
@@ -130,7 +146,7 @@ export default struct TabBar {
       case TouchType.Move:
         const moveY = event.touches[0].y;
         const deltaY = moveY - this.currentOffsetY;
-        
+
         // 如果是向下滑动
         if (deltaY > 0) {
           this.pullDownOffset = Math.min(deltaY, MAX_OFFSET_Y);
@@ -159,6 +175,18 @@ export default struct TabBar {
   }
 
   /**
+   * 根据索引获取分类
+   * @param index 索引
+   * @returns 分类名称
+   */
+  private getCategoryByIndex(index: number): string {
+    if (index >= 0 && index < this.categoryList.length) {
+      return this.categoryList[index];
+    }
+    return CATEGORIES.SELECTED;
+  }
+
+  /**
    * 组件销毁前清理工作
    * 清除刷新定时器
    */
@@ -179,18 +207,9 @@ export default struct TabBar {
           if (this.refreshStatus || this.pullDownOffset > 0) {
             this.buildRefreshView()
           }
-          
-          // 商品列表组件
-          Scroll() {
-            Column() {
-              GoodsList()
-            }
-            .width('100%')
-          }
-          .scrollBar(BarState.Off) // 隐藏滚动条
-          .edgeEffect(EdgeEffect.Spring) // 设置边缘弹性效果
-          .width('100%')
-          .height('100%')
+
+          // 商品列表组件（精选页）
+          GoodsList({ category: this.getCategoryByIndex(0) })
         }
         .width('100%')
         .height('100%')
@@ -202,16 +221,17 @@ export default struct TabBar {
       .tabBar(this.firstTabBar) // 设置标签栏
 
       // 循环创建其他标签页
-      ForEach(initTabBarData(), (item: Resource, index?: number) => {
+      ForEach(this.tabData, (item: Resource, index: number) => {
         TabContent() {
           Column() {
-            Text(item).fontSize(MAX_FONT_SIZE)
+            // 商品列表组件（其他分类页）
+            // 使用索引+1来对应分类数组中的位置
+            GoodsList({ category: this.getCategoryByIndex(index + 1) })
           }
-          .justifyContent(FlexAlign.Center)
-          .width(LAYOUT_WIDTH_OR_HEIGHT)
-          .height(LAYOUT_WIDTH_OR_HEIGHT)
+          .width('100%')
+          .height('100%')
         }
-        .tabBar(this.otherTabBar(item, index !== undefined ? index : 0))
+        .tabBar(this.otherTabBar(item, index))
       })
     }
     // 标签页切换回调
